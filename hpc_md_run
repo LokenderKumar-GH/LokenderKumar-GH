@@ -1,0 +1,84 @@
+#!/bin/bash
+#SBATCH --job-name="18b_1"
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=36
+#SBATCH -A 191106222408
+#SBATCH --exclusive
+#SBATCH --export=ALL
+#SBATCH --time=100:00:00
+
+module purge
+module load compilers/intel
+module load mpi/impi
+module load apps/gromacs
+#>>----- gromacs ------
+
+##NSLOTS=$SLURM_NPROCS
+##echo "NSLOTS=" $NSLOTS
+
+
+###################################
+# gnenerate .gro, .top from .pdb
+###################################
+
+###########################
+###########################
+
+cd $SLURM_SUBMIT_DIR
+
+#topology_file
+##topfile=prm/topol
+
+#>>================== md-NPT ===================================================================
+##jobname=0_1000
+##mdpname=prm/mdp/npt
+##grofile=prm/conf/melt
+##runs=1_form
+
+#>>--- gene inp -----------------------------------------------------------
+##!srun -n 1 gmx grompp -quiet -maxwarn 2\
+##!                     -f md.mdp\
+##!                     -c ${grofile}.gro\
+##!                     -p ${topfile}.top\
+##!                     -o ${runs}/${jobname}.tpr
+
+##NSLOTS=$SLURM_NPROCS
+##echo "NSLOTS=" $NSLOTS
+
+srun -n 1 gmx mdrun -ntmpi 1 -deffnm md_0_1
+
+
+##!#>>--- md ------------------------------------------------------------------
+##!srun -n $NSLOTS  gmx mdrun_mpi -s ${runs}/${jobname}.tpr\
+##!          -e ${runs}/${jobname}.edr\
+##!          -g ${runs}/${jobname}.log\
+##!          -c ${runs}/${jobname}.gro\
+##!          -o ${runs}/${jobname}.trr\
+##!          -cpo ${runs}/${jobname}.cpt\
+##!          -x ${runs}/${jobname}.xtc
+##!
+##!cd ${runs}
+##!mkdir ${jobname}
+##!mv ${jobname}.* ${jobname}
+##!cd ${jobname}
+##!
+##!mpirun -n 1 gmx trjconv -pbc res -dt 100 -f ${jobname}.xtc -s ${jobname}.tpr -o ${jobname}-dt100.xtc <<EOF
+##!0
+##!EOF
+##!
+##!mpirun -n 1 gmx energy -f ${jobname}.edr -o ${jobname}.xvg <<EOF
+##!4
+##!EOF
+##!
+##!cat ${jobname}.xvg | tr '@' '#' > ${jobname}_pot.xvg
+##!
+##!rm ${jobname}.xvg
+##!
+##!mv ${jobname}_pot.xvg ${jobname}.xvg
+##!
+##!rm ${jobname}.trr
+##!
+##!cd ..
+##!
+##!rm ${jobname}_prev.cpt
+##!#>>================== md ===================================================================
